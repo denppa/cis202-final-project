@@ -30,6 +30,5 @@ func main() {
 			fmt.Println(dupes[i])
 		}
 	}
-
 }
 

@@ -219,14 +219,6 @@ func LsDupes(paths string) []VerboseFile {
 		// The ones that dupe vf[i] will be stored in these
 		these := []VerboseFile{}
 
-		// Memoize the hash for vf[i]
-		hero, err := hash(vf[i].Name); if err != nil {
-			m := fmt.Sprintf("Error hashing file %s, skipping to next.", vf[i].Name)
-			fmt.Println(m)
-			continue
-		}
-		vf[i].Md5hash = hero
-
 		for j := range vf {
 			if i==j {continue} // This is actually the same file, skip.
 
@@ -234,6 +226,13 @@ func LsDupes(paths string) []VerboseFile {
 			vf[i].Timestamp == vf[j].Timestamp {
 				m := fmt.Sprintf("%s has same size and timestamp as %s, hasing to verify", vf[i].Name, vf[j].Name)
 				fmt.Println(m)
+
+				hero, err := hash(vf[i].Name); if err != nil {
+					m := fmt.Sprintf("Error hashing file %s, skipping to next.", vf[i].Name)
+					fmt.Println(m)
+					continue
+				}
+				vf[i].Md5hash = hero
 
 				villain, err := hash(vf[j].Name) ; if err != nil {
 					fmt.Println(err)
