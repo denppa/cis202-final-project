@@ -33,3 +33,10 @@ func TestLsMode(t *testing.T) {
 // --- PASS: TestLsMode (0.00s)
 // PASS
 // ok      main/handle     0.088s
+
+func TestExcel(t *testing.T) {
+	Excel(Ls("../test/"), "../test-output/test.xlsx")
+}
+
+// Please see saved xlsx file for verification.
+
