@@ -119,3 +119,70 @@ func Excel(vf []VerboseFile, fileName string) {
         fmt.Println(err)
     }
 }
+
+func ExcelMvDel(excelFile string) {
+	f, err := excelize.OpenFile(excelFile)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer func() {
+		// Close the spreadsheet.
+		if err := f.Close(); err != nil {
+			fmt.Println(err)
+		}
+	}()
+	// Get value from cell by given worksheet name and cell reference.
+	for i :=2;;i++{
+		colFilePath :=  "A"+strconv.Itoa(i)
+		colAction :=  "D"+strconv.Itoa(i)
+
+		filePath, err := f.GetCellValue("Files", colFilePath)
+		if len(filePath) == 0 || err != nil {
+			fmt.Println("Looped through all the files, error: ", err)
+			break
+		}
+
+		action, err := f.GetCellValue("Files", colAction)
+		if len(action)==0 || err != nil {
+			fmt.Println("Skipping ", colAction ,", no action to be performed, or error: ", err)
+			continue
+		}
+
+		actions := strings.Split(action, " ")
+		if actions[0] == "del" {
+			err:=os.Remove(filePath)
+			if err != nil {
+				fmt.Println(err)
+			}
+		} else if actions[0] == "mv" {
+			err:=os.Rename(filePath, actions[1])
+			if err != nil {
+				fmt.Println(err)
+			}
+		} else {
+			m:=fmt.Sprintf("Action %s not recognized, skipping.", actions[i])
+			fmt.Println(m)
+			continue
+		}
+
+	}
+	cell, err := f.GetCellValue("Files", "D")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(cell)
+	// Get all the rows in the Sheet1.
+	rows, err := f.GetRows("Sheet1")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	for _, row := range rows {
+		for _, colCell := range row {
+			fmt.Print(colCell, "\t")
+		}
+		fmt.Println()
+	}
+}

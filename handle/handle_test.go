@@ -40,3 +40,12 @@ func TestExcel(t *testing.T) {
 
 // Please see saved xlsx file for verification.
 
+func TestPrepareExcelMvDel(t *testing.T) {
+	Excel(Ls("../test2/"), "../test-output/test2.xlsx")
+}
+
+// Made the second excel file. Then I modified it, adding the actions columns and 2 actions to be performed.
+
+func TestExcelMvDel(t *testing.T) {
+	ExcelMvDel("../test-output/test2.xlsx")
+}
