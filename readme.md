@@ -57,4 +57,20 @@ Your project will be evaluated based on the following criteria:
 - Documentation: Your documentation should be clear and complete, explaining the purpose, functionality, and usage of your implementation.
 - Testing: Your test cases should be comprehensive and cover various scenarios.
 
-Feel free to reach out to me at zqu001@mt.feitian.edu if you have any questions or need further clarification.
+Feel free to reach out to me at ~~redacted~~ if you have any questions or need further clarification.
+
+# Response to Section 9
+
+The `Ls` function has to be of $O(n)$, where $n$ is the number of files. It is necessary to loop through every file, and optimization is unlikely for this operation.
+
+The `Excel` function is also $O(kn)$, I included $k$ because it is due to the fixed operations it needs to do to insert the value into the cell for each file. I thought about improving this constant, e.g. making 1 call instead of 3 per file when I am populating the columns, but the module I implemented for the sake of ease does not seem to support this.
+
+The `ExcelMvDel` function I implemented is $O(n)$, since it will loop through every row / every file in the spreadsheet to detect if there is an action that needs to be undertaken. One way to improve this would be to sort the spreadsheet, thus costing in general $O(log(n))$, and then loop through the files that are actually marked with an action, skipping the empty ones. But due to the number of files a user usually deal with on their system, the efficiency provided by golang should be enough.
+
+The `LsDupes` function has a lot of space to improve. Currently it takes $O(n^2)$ time to compare every entry, but it is possible to reduce the comparisions needed by implementing a smarter dedupe algorithm. That will take more time to learn, implement and validate then the current version, but will be helpful for a system with more files.
+
+A good decision I think I made was to only hash the file when the cheaper timestamp and file size comparisons have been made. It should be rather rare for a system to have many files that have the same file size and timestamp at the same time, thus reducing the hashing is desriable. Though I did memoize the hashing for `vf[i]`, because it might be used later.
+
+As for space complexity, it is possible for one to run out memory when creating the verbose file list, but considering the modern system's capacity, I don't think it is necessary to optimize that. When developing an app, one must make a balance between efficiency and development time, especially for a student project like this one that is not focused on super optimization, but rather implmentation of learned methods in programming.
+
+Thank you for reading.
