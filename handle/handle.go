@@ -1,7 +1,10 @@
 package handle
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
+	"io"
 	"os"
 	"strconv"
 	"strings"
@@ -15,6 +18,7 @@ type VerboseFile struct {
 	Timestamp int64
 	// FileSize in bytes.
 	FileSize int64
+	Md5hash string
 
 }
 
@@ -185,4 +189,79 @@ func ExcelMvDel(excelFile string) {
 		}
 		fmt.Println()
 	}
+}
+
+// Accepts a path argument that points to a file.
+func hash(path string) (string, error) {
+	// This is an implementation that llm gave me, should be standard.
+	file, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	hash := md5.New()
+	if _, err := io.Copy(hash, file); err != nil {
+		return "", err
+	}
+	hashInBytes := hash.Sum(nil)
+	hashString := hex.EncodeToString(hashInBytes)
+	return hashString, nil
+}
+
+// Files are only considered to be dupes of each other if they have the same size, timestamp, and then hash. If their timpstamp is different, then it is not considered a dupe.
+func LsDupes(paths string) []VerboseFile {
+	dupes := []VerboseFile{}
+	vf := Ls(paths)
+
+	// Loop over every file in the list, check if there are any duplicates.
+	for i := range vf {
+		// The ones that dupe vf[i] will be stored in these
+		these := []VerboseFile{}
+
+		// Memoize the hash for vf[i]
+		hero, err := hash(vf[i].Name); if err != nil {
+			m := fmt.Sprintf("Error hashing file %s, skipping to next.", vf[i].Name)
+			fmt.Println(m)
+			continue
+		}
+		vf[i].Md5hash = hero
+
+		for j := range vf {
+			if i==j {continue} // This is actually the same file, skip.
+
+			if vf[i].FileSize == vf[j].FileSize &&
+			vf[i].Timestamp == vf[j].Timestamp {
+				m := fmt.Sprintf("%s has same size and timestamp as %s, hasing to verify", vf[i].Name, vf[j].Name)
+				fmt.Println(m)
+
+				villain, err := hash(vf[j].Name) ; if err != nil {
+					fmt.Println(err)
+					continue
+				}
+				if hero  == villain {
+					vf[j].Md5hash = villain
+					these = append(these, vf[j])
+				}
+			}
+		}
+		// If the dupes for vf[i] has been found, they would be in these.
+		if len(these) > 0 {
+			these = append(these, vf[i])
+			for i := range these {
+				alreadyInList := false
+				for j := range dupes {
+					if these[i] == dupes[j] {
+						alreadyInList = true
+						break
+					}
+				}
+				if !alreadyInList {
+					dupes = append(dupes, these[i])
+				}
+			}
+		}
+	}
+
+	return dupes
 }
